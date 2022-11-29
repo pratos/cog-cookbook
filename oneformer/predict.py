@@ -301,8 +301,6 @@ def setup_cfg(dataset, model_path, use_swin):
     cfg.freeze()
     return cfg
 
-import torch
-import numpy as np
 
 class PanopticPrediction:
     """
