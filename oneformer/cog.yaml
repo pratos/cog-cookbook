@@ -1,0 +1,54 @@
+# Configuration for Cog ⚙️
+# Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+    - "build-essential"
+    - "zlib1g-dev"
+    - "libbz2-dev"
+    - "llvm"
+    - "libncurses5-dev"
+    - "libncursesw5-dev"
+    - "libffi-dev"
+    - "liblzma-dev"
+    - "libpq-dev"
+    - "ffmpeg"
+    - "imagemagick"
+    - "gcc-multilib"
+    - "g++-multilib"
+    - "libsm6"
+    - "libxext6"
+    - "libgl1"
+
+  # python version in the form '3.8' or '3.8.12'
+  python_version: "3.8.15"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "numpy==1.19.4"
+    - "torch==1.9.0"
+    - "torchvision==0.10.0"
+    - "opencv-python==4.6.0.66"
+    - "Pillow==9.3.0"
+    - "gdown==4.5.4"
+  
+  # commands run after the environment is setup
+  run:
+    - "echo Downloading other installations..."
+    - "echo \t> Installing detectron2"
+    - "pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.9/index.html"
+    - "pip install git+https://github.com/mcordts/cityscapesScripts.git"
+    - "pip install git+https://github.com/cocodataset/panopticapi.git"
+    - "pip install natten==0.4.12 -f https://shi-labs.com/natten/wheels/cu102/torch1.9/index.html"
+    - "echo \t> Downloading oneformer wheel..."
+    - "wget https://zjvyopqjndpnptxahays.supabase.co/storage/v1/object/public/oneformer/oneformer-0.1.0-py3-none-any.whl"
+    - "pip install ./oneformer-0.1.0-py3-none-any.whl"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
