@@ -47,15 +47,12 @@ build:
     - "git clone https://github.com/facebookresearch/detectron2.git && pip install -e detectron2"
     - "pip install git+https://github.com/mcordts/cityscapesScripts.git"
     - "pip install git+https://github.com/cocodataset/panopticapi.git"
-    - "wget https://shi-labs.com/natten/wheels/cu113/torch1.12/natten-0.14.4%2Btorch1120cu113-cp38-cp38-linux_x86_64.whl"
-    - "pip install 'natten-0.14.4+torch1120cu113-cp38-cp38-linux_x86_64.whl'"
-    - "echo \t> Downloading oneformer wheel..."
-    - "wget https://zjvyopqjndpnptxahays.supabase.co/storage/v1/object/public/oneformer/oneformer-0.1.0-py3-none-any.whl"
+    - "wget https://shi-labs.com/natten/wheels/cu113/torch1.11/natten-0.14.4%2Btorch1110cu113-cp38-cp38-linux_x86_64.whl"
+    - "pip install 'natten-0.14.4+torch1110cu113-cp38-cp38-linux_x86_64.whl'"
     - "echo \t> Downloading oneformer configs"
     - "wget https://zjvyopqjndpnptxahays.supabase.co/storage/v1/object/public/oneformer/Base-ADE20K-UnifiedSegmentation.yaml"
     - "wget https://zjvyopqjndpnptxahays.supabase.co/storage/v1/object/public/oneformer/oneformer_R50_bs16_160k.yaml"
     - "wget https://zjvyopqjndpnptxahays.supabase.co/storage/v1/object/public/oneformer/oneformer_swin_large_IN21k_384_bs16_160k.yaml?t=2022-11-29T19%3A33%3A26.761Z -O oneformer_swin_large_IN21k_384_bs16_160k.yaml"
-    - "pip install ipython"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
