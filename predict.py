@@ -4,8 +4,68 @@ from detectron2.data import MetadataCatalog
 from PIL import Image
 import detectron2.data.transforms as T
 import numpy as np
-from datetime import datetime
 import pickle
+from detectron2.utils.logger import setup_logger
+setup_logger()
+setup_logger(name="oneformer")
+
+# Import libraries
+import numpy as np
+import torch
+
+# Import detectron2 utilities
+from detectron2.config import get_cfg
+from detectron2.projects.deeplab import add_deeplab_config
+from detectron2.data import MetadataCatalog
+from demo.defaults import DefaultPredictor
+
+
+# import OneFormer Project
+from oneformer import (
+    add_oneformer_config,
+    add_common_config,
+    add_swin_config,
+    add_dinat_config,
+    add_convnext_config,
+)
+
+cpu_device = torch.device("cpu")
+SWIN_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_swin_large_IN21k_384_bs16_90k.yaml",
+            "coco": "configs/coco/oneformer_swin_large_IN21k_384_bs16_100ep.yaml",
+            "ade20k": "configs/ade20k/oneformer_swin_large_IN21k_384_bs16_160k.yaml",}
+
+DINAT_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_dinat_large_bs16_90k.yaml",
+            "coco": "configs/coco/oneformer_dinat_large_bs16_100ep.yaml",
+            "ade20k": "configs/ade20k/oneformer_dinat_large_IN21k_384_bs16_160k.yaml",}
+
+def setup_cfg(dataset, model_path, use_swin):
+    # load config from file and command-line arguments
+    cfg = get_cfg()
+    add_deeplab_config(cfg)
+    add_common_config(cfg)
+    add_swin_config(cfg)
+    add_dinat_config(cfg)
+    add_convnext_config(cfg)
+    add_oneformer_config(cfg)
+    if use_swin:
+      cfg_path = SWIN_CFG_DICT[dataset]
+    else:
+      cfg_path = DINAT_CFG_DICT[dataset]
+    cfg.merge_from_file(cfg_path)
+    cfg.MODEL.DEVICE = 'cuda'
+    cfg.MODEL.WEIGHTS = model_path
+    cfg.freeze()
+    return cfg
+
+def setup_modules(dataset, model_path, use_swin):
+    cfg = setup_cfg(dataset, model_path, use_swin)
+    predictor = DefaultPredictor(cfg)
+    metadata = MetadataCatalog.get(
+        cfg.DATASETS.TEST_PANOPTIC[0] if len(cfg.DATASETS.TEST_PANOPTIC) else "__unused"
+    )
+
+    return predictor, metadata
+
 
 def preprocess(image):
     image = np.asarray(image)
