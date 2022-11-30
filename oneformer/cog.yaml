@@ -49,6 +49,7 @@ build:
     - "pip install git+https://github.com/cocodataset/panopticapi.git"
     - "wget https://shi-labs.com/natten/wheels/cu113/torch1.11/natten-0.14.4%2Btorch1110cu113-cp38-cp38-linux_x86_64.whl"
     - "pip install 'natten-0.14.4+torch1110cu113-cp38-cp38-linux_x86_64.whl'"
+    - "pip install ipython"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
