@@ -82,7 +82,7 @@ def preprocess(image):
 
 class Predictor(BasePredictor):
     def setup(self):
-        self.predictor, _ = setup_modules("ade20k", "250_16_dinat_l_oneformer_ade20k_160k.pth", True)
+        self.predictor, _ = setup_modules("ade20k", "250_16_swin_l_oneformer_ade20k_160k.pth", True)
         """Load the model into memory to make running multiple predictions efficient"""
         print("Model loaded...")
 
