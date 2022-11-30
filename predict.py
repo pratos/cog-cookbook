@@ -44,7 +44,7 @@ def setup_cfg(dataset, model_path, use_swin):
     add_deeplab_config(cfg)
     add_common_config(cfg)
     add_swin_config(cfg)
-    add_dinat_config(cfg)
+    # add_dinat_config(cfg)
     add_convnext_config(cfg)
     add_oneformer_config(cfg)
     if use_swin:
