@@ -82,8 +82,8 @@ def preprocess(image):
 
 class Predictor(BasePredictor):
     def setup(self):
+        self.predictor, _ = setup_modules("ade20k", "250_16_dinat_l_oneformer_ade20k_160k.pth", True)
         """Load the model into memory to make running multiple predictions efficient"""
-        self.model = torch.load("./image-bg-removal.pkl")
         print("Model loaded...")
 
     def predict(
@@ -92,8 +92,8 @@ class Predictor(BasePredictor):
     ) -> Path:
         """Run a single prediction on the model"""
         im = Image.open(image)
-        processed_input = preprocess(im)
-        output = self.model(processed_input)[0]
+        # processed_input = preprocess(im)
+        output = self.predictor(im, "panoptic")
         print(output["panoptic_seg"])
         with open("output_dump.pkl", "wb") as pkl_dump:
             pickle.dump(output["panoptic_seg"], pkl_dump)
