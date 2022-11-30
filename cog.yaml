@@ -42,14 +42,14 @@ build:
   run:
     - "echo Downloading other installations..."
     - "echo \t> Installing torch for cuda 11.3"
-    - "pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0 --extra-index-url https://download.pytorch.org/whl/cu113"
+    - "pip install torch==1.9.0 torchvision==0.10.0 --quiet"
     - "echo \t> Installing detectron2"
-    - "git clone https://github.com/facebookresearch/detectron2.git && pip install -e detectron2"
-    - "pip install git+https://github.com/mcordts/cityscapesScripts.git"
-    - "pip install git+https://github.com/cocodataset/panopticapi.git"
-    - "wget https://shi-labs.com/natten/wheels/cu113/torch1.11/natten-0.14.4%2Btorch1110cu113-cp38-cp38-linux_x86_64.whl"
-    - "pip install 'natten-0.14.4+torch1110cu113-cp38-cp38-linux_x86_64.whl'"
-    - "pip install ipython"
+    - "python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.9/index.html"
+    - "pip3 install natten==0.14.2 -f https://shi-labs.com/natten/wheels/cu102/torch1.9/index.html"
+    - "pip install git+https://github.com/cocodataset/panopticapi.git --quiet"
+    - "pip install git+https://github.com/mcordts/cityscapesScripts.git --quiet"
+    - "pip install wandb gradio diffdist einops scipy shapely timm h5py submitit scikit-image icecream ftfy regex inflect pytorch_lightning tqdm"
+    - "pip install imutils"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

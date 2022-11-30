@@ -94,7 +94,8 @@ class Predictor(BasePredictor):
     ) -> Path:
         """Run a single prediction on the model"""
         # im = Image.open(image)
-        img = cv2.imread("samples/ade20k.jpeg")
+        print(f"Image path: {str(image)}")
+        img = cv2.imread(str(image))
         img = imutils.resize(img, width=640)
 
         # processed_input = preprocess(im)
@@ -102,4 +103,4 @@ class Predictor(BasePredictor):
         print(output["panoptic_seg"])
         with open("output_dump.pkl", "wb") as pkl_dump:
             pickle.dump(output["panoptic_seg"], pkl_dump)
-        return "output_dump.pkl"
+        return Path("output_dump.pkl")
