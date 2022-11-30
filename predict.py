@@ -8,7 +8,8 @@ import pickle
 from detectron2.utils.logger import setup_logger
 setup_logger()
 setup_logger(name="oneformer")
-
+import imutils
+import cv2
 # Import libraries
 import numpy as np
 import torch
@@ -66,6 +67,7 @@ def setup_modules(dataset, model_path, use_swin):
 
     return predictor, metadata
 
+# def preprocess_cv2(image):
 
 def preprocess(image):
     image = np.asarray(image)
@@ -91,9 +93,12 @@ class Predictor(BasePredictor):
         image: Path = Input(description="Grayscale input image"),
     ) -> Path:
         """Run a single prediction on the model"""
-        im = Image.open(image)
+        # im = Image.open(image)
+        img = cv2.imread("samples/ade20k.jpeg")
+        img = imutils.resize(img, width=640)
+
         # processed_input = preprocess(im)
-        output = self.predictor(im, "panoptic")
+        output = self.predictor(img, "panoptic")
         print(output["panoptic_seg"])
         with open("output_dump.pkl", "wb") as pkl_dump:
             pickle.dump(output["panoptic_seg"], pkl_dump)
