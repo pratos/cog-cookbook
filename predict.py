@@ -96,7 +96,7 @@ class Predictor(BasePredictor):
         """Run a single prediction on the model"""
         img = Image.open(image)
 
-        output = self.predictor(img, "panoptic")
+        output = self.predictor(np.asarray(img), "panoptic")
         panoptic_seg, segments_info = output["panoptic_seg"]
         pred = _PanopticPrediction(panoptic_seg.cpu(), segments_info, self.metadata)
         panoptic_preds = list(pred.semantic_masks())
@@ -118,4 +118,4 @@ class Predictor(BasePredictor):
         wip_img = Image.new('RGBA', (100, 100), (255, 0, 0, 0))
         img1 = Image.composite(img, wip_img, mask=bg_blur2)
         img1.save("output.png")
-        return output.png
+        return Path("output.png")
