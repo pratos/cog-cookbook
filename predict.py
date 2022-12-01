@@ -1,7 +1,7 @@
 from cog import BasePredictor, Input, Path
 import torch
 from detectron2.data import MetadataCatalog
-from PIL import Image
+from PIL import Image, ImageFilter
 import detectron2.data.transforms as T
 import numpy as np
 import pickle
@@ -13,12 +13,13 @@ import cv2
 # Import libraries
 import numpy as np
 import torch
-
+from demo.visualizer import _PanopticPrediction
 # Import detectron2 utilities
 from detectron2.config import get_cfg
 from detectron2.projects.deeplab import add_deeplab_config
 from detectron2.data import MetadataCatalog
 from demo.defaults import DefaultPredictor
+import numpy.ma as ma
 
 
 # import OneFormer Project
@@ -68,7 +69,7 @@ def setup_modules(dataset, model_path, use_swin):
     return predictor, metadata
 
 # def preprocess_cv2(image):
-
+exceptions = ["sky", "floor", "ceiling", "road, route", "grass", "earth, ground", "field", "sand", "hill"]
 def preprocess(image):
     image = np.asarray(image)
     height, width = image.shape[:2]
@@ -84,8 +85,8 @@ def preprocess(image):
 
 class Predictor(BasePredictor):
     def setup(self):
-        self.predictor, _ = setup_modules("ade20k", "250_16_swin_l_oneformer_ade20k_160k.pth", True)
-        """Load the model into memory to make running multiple predictions efficient"""
+        self.predictor, self.metadata = setup_modules("ade20k", "250_16_swin_l_oneformer_ade20k_160k.pth", True)
+        self.stuff_mapper = dict(zip(range(0, len(self.metadata.stuff_classes)), self.metadata.stuff_classes))
         print("Model loaded...")
 
     def predict(
@@ -93,14 +94,28 @@ class Predictor(BasePredictor):
         image: Path = Input(description="Grayscale input image"),
     ) -> Path:
         """Run a single prediction on the model"""
-        # im = Image.open(image)
-        print(f"Image path: {str(image)}")
-        img = cv2.imread(str(image))
-        img = imutils.resize(img, width=640)
+        img = Image.open(image)
 
-        # processed_input = preprocess(im)
         output = self.predictor(img, "panoptic")
-        print(output["panoptic_seg"])
-        with open("output_dump.pkl", "wb") as pkl_dump:
-            pickle.dump(output["panoptic_seg"], pkl_dump)
-        return Path("output_dump.pkl")
+        panoptic_seg, segments_info = output["panoptic_seg"]
+        pred = _PanopticPrediction(panoptic_seg.cpu(), segments_info, self.metadata)
+        panoptic_preds = list(pred.semantic_masks())
+        valid_segments = []
+        for segment, sinfo in panoptic_preds:
+            if self.stuff_mapper[sinfo["category_id"]] in exceptions:
+                continue
+            valid_segments.append(segment.astype("uint8"))
+        mask_merged = None
+        for idx, segment in enumerate(valid_segments):
+            if idx == 0:
+                mask_merged = segment
+            if len(valid_segments) == idx + 1:
+                break
+            mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
+        background = Image.fromarray(mask_merged)
+        bg_blur = background.convert("L")
+        bg_blur2 = bg_blur.filter(ImageFilter.BoxBlur(1))
+        wip_img = Image.new('RGBA', (100, 100), (255, 0, 0, 0))
+        img1 = Image.composite(img, wip_img, mask=bg_blur2)
+        img1.save("output.png")
+        return output.png
