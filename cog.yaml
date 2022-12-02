@@ -27,6 +27,7 @@ build:
     - "libsm6"
     - "libxext6"
     - "libgl1"
+    - "libwebp-dev"
 
   # python version in the form '3.8' or '3.8.12'
   python_version: "3.8.15"
@@ -49,7 +50,7 @@ build:
     - "pip install git+https://github.com/cocodataset/panopticapi.git --quiet"
     - "pip install git+https://github.com/mcordts/cityscapesScripts.git --quiet"
     - "pip install wandb gradio diffdist einops scipy shapely timm h5py submitit scikit-image icecream ftfy regex inflect pytorch_lightning tqdm"
-    - "pip install imutils"
+    - "pip install imutils pillow-heif pillow-avif-plugin"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

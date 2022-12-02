@@ -5,9 +5,6 @@ from PIL import Image, ImageFilter
 import detectron2.data.transforms as T
 import numpy as np
 import pickle
-from detectron2.utils.logger import setup_logger
-setup_logger()
-setup_logger(name="oneformer")
 import imutils
 import cv2
 # Import libraries
@@ -20,8 +17,8 @@ from detectron2.projects.deeplab import add_deeplab_config
 from detectron2.data import MetadataCatalog
 from demo.defaults import DefaultPredictor
 import numpy.ma as ma
-
-
+from demo.visualizer import Visualizer, ColorMode
+from typing import List
 # import OneFormer Project
 from oneformer import (
     add_oneformer_config,
@@ -30,7 +27,10 @@ from oneformer import (
     add_dinat_config,
     add_convnext_config,
 )
+import pillow_avif
+from pillow_heif import register_heif_opener
 
+register_heif_opener()
 cpu_device = torch.device("cpu")
 SWIN_CFG_DICT = {"cityscapes": "configs/cityscapes/oneformer_swin_large_IN21k_384_bs16_90k.yaml",
             "coco": "configs/coco/oneformer_swin_large_IN21k_384_bs16_100ep.yaml",
@@ -68,7 +68,7 @@ def setup_modules(dataset, model_path, use_swin):
 
     return predictor, metadata
 
-exceptions = ["sky", "floor", "ceiling", "road, route", "grass", "earth, ground", "field", "sand", "hill", "fireplace", "land, ground, soil", "wall", "ceiling", "door", "mountain, mount", "curtain", "water", "sea", "path", "countertop", "bench", "dirt track", "stage", "lake", "screen", ]
+exceptions = ["sky", "floor", "ceiling", "road, route", "grass", "earth, ground", "field", "sand", "hill", "fireplace", "land, ground, soil", "wall", "ceiling", "door", "mountain, mount", "curtain", "water", "sea", "path", "countertop", "bench", "shelf", "dirt track", "stage", "lake", "screen", ]
 
 class Predictor(BasePredictor):
     def setup(self):
@@ -78,24 +78,22 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
-        image: Path = Input(description="Grayscale input image"),
-    ) -> Path:
+        image: Path = Input(description="Upload image in following formats: jpg, jpeg, png, heic, webp, heif, avif"),
+        show_all_masks: str = Input(description="Add 'yes' for showing all the masks")
+    ) -> List[Path]:
         """Run a single prediction on the model"""
-        img = Image.open(image)
-
+        img = Image.open(image).convert("RGB")
+        if img.format in ["AVIF", "HEIC"]:
+            img = img.convert("RGB")
         output = self.predictor(np.asarray(img), "panoptic")
-        panoptic_seg, segments_info = predictions["panoptic_seg"]
-        pred = _PanopticPrediction(panoptic_seg.cpu(), segments_info, metadata)
+        panoptic_seg, segments_info = output["panoptic_seg"]
+        pred = _PanopticPrediction(panoptic_seg.cpu(), segments_info, self.metadata)
         semantic_masks = list(pred.semantic_masks())
         instance_masks = list(pred.instance_masks())
         panoptic_preds = semantic_masks + instance_masks
         print([preds[1] for preds in panoptic_preds])
         valid_segments = []
         for segment, sinfo in panoptic_preds:
-            if stuff_mapper[sinfo['category_id']] == "person":
-                valid_segments = []
-                valid_segments.append(segment.astype("uint8"))
-                break
             if self.stuff_mapper[sinfo["category_id"]] in exceptions:
                 continue
             valid_segments.append(segment.astype("uint8"))
@@ -110,9 +108,25 @@ class Predictor(BasePredictor):
                     break
                 mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
         background = Image.fromarray(mask_merged)
-        bg_blur = background.convert("L")
-        bg_blur2 = bg_blur.filter(ImageFilter.BoxBlur(1))
-        wip_img = Image.new('RGBA', img.size, (0, 0, 0, 0))
-        img1 = Image.composite(img, wip_img, mask=bg_blur2)
-        img1.save("output.png")
-        return Path("output.png")
+
+        if mask_merged.size:
+            bg_blur = background.convert("L")
+            bg_blur2 = bg_blur.filter(ImageFilter.BoxBlur(1))
+            wip_img = Image.new('RGBA', img.size, (0, 0, 0, 0))
+            img1 = Image.composite(img, wip_img, mask=bg_blur2)
+        
+            img1.save("output.png")
+        else:
+            img.save("output.png")
+        # CV2 image read
+        if show_all_masks == "yes":
+            cv2_img = cv2.imread(str(image))
+            visualizer = Visualizer(cv2_img[:, :, ::-1], metadata=self.metadata, instance_mode=ColorMode.IMAGE)
+            out = visualizer.draw_panoptic_seg_predictions(
+                panoptic_seg.to(cpu_device), segments_info, alpha=0.5
+            )
+            all_seg_img = Image.fromarray(out.get_image())
+            all_seg_img.save("all_seg.png")
+            return [Path("output.png"), Path("all_seg.png")]
+
+        return [Path("output.png")]
