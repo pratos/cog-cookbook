@@ -83,6 +83,9 @@ def parse_panoptic_seg_masks(panoptic_seg_output, metadata, stuff_mapper):
     instance_masks = list(pred.instance_masks())
     panoptic_preds = semantic_masks + instance_masks
     print([preds[1] for preds in panoptic_preds])
+    mask_classes = [preds[1] for preds in panoptic_preds]
+    if len(mask_classes) == 1 and mask_classes[0]["category_id"] == 0:
+        return None, None
     valid_segments = []
     for segment, sinfo in panoptic_preds:
         if stuff_mapper[sinfo["category_id"]] in exceptions:
@@ -159,6 +162,9 @@ class Predictor(BasePredictor):
         mask_merged = None
         if task_type == "panoptic":
             background, mask_merged = parse_panoptic_seg_masks(panoptic_seg_output=output["panoptic_seg"], metadata=self.metadata, stuff_mapper=self.stuff_mapper)
+            if mask_merged == None and background == None:
+                img.save(f"{task_type}_output.png")
+                return [Path(f"{task_type}_output.png")]
             save_final_img(img=img, background=background, mask_merged=mask_merged, task_type=task_type)
             return [Path(f"{task_type}_output.png")]
         elif task_type == "semantic":
