@@ -115,7 +115,7 @@ class Predictor(BasePredictor):
         background = Image.fromarray(mask_merged)
         bg_blur = background.convert("L")
         bg_blur2 = bg_blur.filter(ImageFilter.BoxBlur(1))
-        wip_img = Image.new('RGBA', (100, 100), (255, 0, 0, 0))
+        wip_img = Image.new('RGBA', img.size, (0, 0, 0, 0))
         img1 = Image.composite(img, wip_img, mask=bg_blur2)
         img1.save("output.png")
         return Path("output.png")
