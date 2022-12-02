@@ -84,7 +84,7 @@ def parse_panoptic_seg_masks(panoptic_seg_output, metadata, stuff_mapper):
     panoptic_preds = semantic_masks + instance_masks
     print([preds[1] for preds in panoptic_preds])
     mask_classes = [preds[1] for preds in panoptic_preds]
-    if (len(mask_classes) == 1 or len(mask_classes) == 0) and mask_classes[0]["category_id"] == 0:
+    if len(mask_classes) == 0 or (len(mask_classes) == 1 and mask_classes[0]["category_id"] == 0):
         return None, None
     valid_segments = []
     for segment, sinfo in panoptic_preds:
