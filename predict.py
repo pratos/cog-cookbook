@@ -178,6 +178,9 @@ class Predictor(BasePredictor):
 
             background = mask_merged = None
             background, mask_merged = parse_panoptic_seg_masks(panoptic_seg_output=output["panoptic_seg"], metadata=self.metadata, stuff_mapper=self.stuff_mapper)
-            save_final_img(img=img, background=background, mask_merged=mask_merged, task_type="panoptic")
+            if mask_merged is None and background is None:
+                img.save(f"{task_type}_output.png")
+            else:
+                save_final_img(img=img, background=background, mask_merged=mask_merged, task_type="panoptic")
             return [Path(f"semantic_output.png"), Path(f"panoptic_output.png")]
 
