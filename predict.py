@@ -162,12 +162,12 @@ class Predictor(BasePredictor):
             save_final_img(img=img, background=background, mask_merged=mask_merged, task_type=task_type)
             return [Path(f"{task_type}_output.png")]
         elif task_type == "semantic":
-            background, mask_merged = parse_semantic_seg_masks(semantic_seg_output=output["semantic_seg"], metadata=self.metadata)
+            background, mask_merged = parse_semantic_seg_masks(semantic_seg_output=output["sem_seg"], metadata=self.metadata)
             save_final_img(img=img, background=background, mask_merged=mask_merged, task_type=task_type)
             return [Path(f"{task_type}_output.png")]
         elif task_type == "all":
             background = mask_merged = None
-            background, mask_merged = parse_semantic_seg_masks(semantic_seg_output=output["semantic_seg"], metadata=self.metadata)
+            background, mask_merged = parse_semantic_seg_masks(semantic_seg_output=output["sem_seg"], metadata=self.metadata)
             save_final_img(img=img, background=background, mask_merged=mask_merged, task_type="semantic")
 
             background = mask_merged = None
