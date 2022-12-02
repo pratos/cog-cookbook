@@ -68,20 +68,7 @@ def setup_modules(dataset, model_path, use_swin):
 
     return predictor, metadata
 
-# def preprocess_cv2(image):
-exceptions = ["sky", "floor", "ceiling", "road, route", "grass", "earth, ground", "field", "sand", "hill"]
-def preprocess(image):
-    image = np.asarray(image)
-    height, width = image.shape[:2]
-
-    print("  > Preprocessing image...")
-    aug = T.ResizeShortestEdge(
-        [640, 640], 2560
-    )
-    image = aug.get_transform(image).apply_image(image)
-    image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
-    inputs = [{"image": image, "height": height, "width": width, "task": "panoptic"}]
-    return inputs
+exceptions = ["sky", "floor", "ceiling", "road, route", "grass", "earth, ground", "field", "sand", "hill", "fireplace", "land, ground, soil", "wall", "ceiling", "door", "mountain, mount", "curtain", "water", "sea", "path", "countertop", "bench", "dirt track", "stage", "lake", "screen", ]
 
 class Predictor(BasePredictor):
     def setup(self):
@@ -97,21 +84,31 @@ class Predictor(BasePredictor):
         img = Image.open(image)
 
         output = self.predictor(np.asarray(img), "panoptic")
-        panoptic_seg, segments_info = output["panoptic_seg"]
-        pred = _PanopticPrediction(panoptic_seg.cpu(), segments_info, self.metadata)
-        panoptic_preds = list(pred.semantic_masks())
+        panoptic_seg, segments_info = predictions["panoptic_seg"]
+        pred = _PanopticPrediction(panoptic_seg.cpu(), segments_info, metadata)
+        semantic_masks = list(pred.semantic_masks())
+        instance_masks = list(pred.instance_masks())
+        panoptic_preds = semantic_masks + instance_masks
+        print([preds[1] for preds in panoptic_preds])
         valid_segments = []
         for segment, sinfo in panoptic_preds:
+            if stuff_mapper[sinfo['category_id']] == "person":
+                valid_segments = []
+                valid_segments.append(segment.astype("uint8"))
+                break
             if self.stuff_mapper[sinfo["category_id"]] in exceptions:
                 continue
             valid_segments.append(segment.astype("uint8"))
         mask_merged = None
-        for idx, segment in enumerate(valid_segments):
-            if idx == 0:
-                mask_merged = segment
-            if len(valid_segments) == idx + 1:
-                break
-            mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
+        if len(valid_segments) == 1:
+            mask_merged = valid_segments[0].astype("bool")
+        else:
+            for idx, segment in enumerate(valid_segments):
+                if idx == 0:
+                    mask_merged = segment
+                if len(valid_segments) == idx + 1:
+                    break
+                mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
         background = Image.fromarray(mask_merged)
         bg_blur = background.convert("L")
         bg_blur2 = bg_blur.filter(ImageFilter.BoxBlur(1))
