@@ -1,0 +1,51 @@
+# Configuration for Cog ⚙️
+# Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+image: "r8.im/pratos/oneformer-segmentation-v1"
+
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+  cuda: "11.6"
+
+  # a list of ubuntu apt packages to install
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+    - "build-essential"
+    - "zlib1g-dev"
+    - "libbz2-dev"
+    - "llvm"
+    - "libncurses5-dev"
+    - "libncursesw5-dev"
+    - "libffi-dev"
+    - "liblzma-dev"
+    - "libpq-dev"
+    - "ffmpeg"
+    - "imagemagick"
+    - "gcc-multilib"
+    - "g++-multilib"
+    - "libsm6"
+    - "libxext6"
+    - "libgl1"
+    - "libwebp-dev"
+
+  # python version in the form '3.8' or '3.8.12'
+  python_version: "3.8.16"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "numpy==1.19.4"
+    - "opencv-python==4.6.0.66"
+    - "Pillow==9.3.0"
+    - "gdown==4.5.4"
+
+  # commands run after the environment is setup
+  run:
+    - "echo Downloading other installations..."
+    - "echo \t> Installing torch for cuda 11.6"
+    - "pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu116"
+    - ""
+    - "pip install imutils pillow-heif pillow-avif-plugin"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
