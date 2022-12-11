@@ -1,6 +1,6 @@
 # Configuration for Cog ⚙️
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
-image: "r8.im/pratos/oneformer-segmentation-v1"
+image: "r8.im/pratos/dis-v1"
 
 build:
   # set to true if your model requires a GPU
@@ -44,8 +44,7 @@ build:
     - "echo Downloading other installations..."
     - "echo \t> Installing torch for cuda 11.3"
     - "pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113"
-    - ""
     - "pip install imutils pillow-heif pillow-avif-plugin"
-
+    - "pip install scikit-image"
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

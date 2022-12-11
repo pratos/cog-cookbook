@@ -11,8 +11,7 @@ from isnet.model import ISNetDIS
 from io import BytesIO
 
 # project imports
-from data_loader_cache import normalize, im_reader, im_preprocess
-from pathlib import Path
+from isnet.data_loader_cache import normalize, im_reader, im_preprocess
 from PIL import Image, ImageFilter
 import pillow_avif
 from pillow_heif import register_heif_opener
@@ -49,7 +48,7 @@ class GOSNormalize(object):
 transform =  transforms.Compose([GOSNormalize([0.5,0.5,0.5],[1.0,1.0,1.0])])
 
 def load_image(img):
-    im, im_shp = im_preprocess(img, config["cache_size"])
+    im, im_shp = im_preprocess(np.array(img), config["cache_size"])
     im = torch.divide(im,255.0)
     shape = torch.from_numpy(np.array(im_shp))
     return transform(im).unsqueeze(0), shape.unsqueeze(0)
@@ -100,7 +99,6 @@ class Predictor(BasePredictor):
     def predict(
         self,
         image: Path = Input(description="Upload image in following formats: jpg, jpeg, png, heic, webp, heif, avif"),
-        task_type: str = Input(description="Add panoptic or semantic or all"),
     ) -> List[Path]:
         """Run a single prediction on the model"""
         img = Image.open(image).convert("RGB")
@@ -108,6 +106,7 @@ class Predictor(BasePredictor):
             img = img.convert("RGB")
         image_tensor, orig_size = load_image(img)
         background = run_inference(net=self.predictor, inputs_val=image_tensor, shapes_val=orig_size)
+        background = Image.fromarray(background)
         background.save("background.png")
         bg_blur = background.convert("L")
         bg_blur2 = bg_blur.filter(ImageFilter.BoxBlur(1))
