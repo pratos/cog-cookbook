@@ -101,6 +101,8 @@ def parse_panoptic_seg_masks(panoptic_seg_output, metadata, stuff_mapper):
             if len(valid_segments) == idx + 1:
                 break
             mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
+    if not mask_merged:
+        return None, None
     background = Image.fromarray(mask_merged)
     return background, mask_merged
 
@@ -117,7 +119,7 @@ def parse_semantic_seg_masks(semantic_seg_output, metadata):
         binary_mask = (sem_seg == label).astype(np.uint8)
         text = metadata.stuff_classes[label]
         validated_masks.append({"mask": binary_mask, "class": text})
-
+    print(validated_masks)
     valid_segments = []
     for mask_info in validated_masks:
         if mask_info["class"] in exceptions:
@@ -133,6 +135,8 @@ def parse_semantic_seg_masks(semantic_seg_output, metadata):
             if len(valid_segments) == idx + 1:
                 break
             mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
+    if not mask_merged:
+        return None, None
     background = Image.fromarray(mask_merged)
     return background, mask_merged
 

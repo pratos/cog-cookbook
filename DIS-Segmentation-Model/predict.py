@@ -53,7 +53,6 @@ def load_image(img):
     shape = torch.from_numpy(np.array(im_shp))
     return transform(im).unsqueeze(0), shape.unsqueeze(0)
 
-
 def run_inference(net,  inputs_val, shapes_val):
     '''
     Given an Image, predict the mask
