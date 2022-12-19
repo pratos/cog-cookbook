@@ -1,6 +1,5 @@
 # Configuration for Cog ⚙️
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
-image: "r8.im/pratos/oneformer-segmentation-v1"
 
 build:
   # set to true if your model requires a GPU
@@ -34,7 +33,6 @@ build:
 
   # a list of packages in the format <package-name>==<version>
   python_packages:
-    - "numpy==1.19.4"
     - "opencv-python==4.6.0.66"
     - "Pillow==9.3.0"
     - "gdown==4.5.4"
@@ -49,7 +47,7 @@ build:
     - "pip3 install natten==0.14.2 -f https://shi-labs.com/natten/wheels/cu102/torch1.9/index.html"
     - "pip install git+https://github.com/cocodataset/panopticapi.git --quiet"
     - "pip install git+https://github.com/mcordts/cityscapesScripts.git --quiet"
-    - "pip install wandb gradio diffdist einops scipy shapely timm h5py submitit scikit-image icecream ftfy regex inflect pytorch_lightning tqdm"
+    - "pip install wandb numpy gradio diffdist einops scipy shapely timm h5py submitit scikit-image icecream ftfy regex inflect pytorch_lightning tqdm"
     - "pip install imutils pillow-heif pillow-avif-plugin"
 
 # predict.py defines how predictions are run on your model

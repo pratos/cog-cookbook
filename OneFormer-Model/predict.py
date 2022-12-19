@@ -91,7 +91,7 @@ def parse_panoptic_seg_masks(panoptic_seg_output, metadata, stuff_mapper):
         if stuff_mapper[sinfo["category_id"]] in exceptions:
             continue
         valid_segments.append(segment.astype("uint8"))
-    mask_merged = None
+    mask_merged = np.array([])
     if len(valid_segments) == 1:
         mask_merged = valid_segments[0].astype("bool")
     else:
@@ -101,7 +101,7 @@ def parse_panoptic_seg_masks(panoptic_seg_output, metadata, stuff_mapper):
             if len(valid_segments) == idx + 1:
                 break
             mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
-    if not mask_merged:
+    if mask_merged.size == 0:
         return None, None
     background = Image.fromarray(mask_merged)
     return background, mask_merged
@@ -125,7 +125,7 @@ def parse_semantic_seg_masks(semantic_seg_output, metadata):
         if mask_info["class"] in exceptions:
             continue
         valid_segments.append(mask_info["mask"].astype("uint8"))
-    mask_merged = None
+    mask_merged = np.array([])
     if len(valid_segments) == 1:
         mask_merged = valid_segments[0].astype("bool")
     else:
@@ -135,7 +135,7 @@ def parse_semantic_seg_masks(semantic_seg_output, metadata):
             if len(valid_segments) == idx + 1:
                 break
             mask_merged = ma.mask_or(mask_merged.astype("uint8"), valid_segments[idx + 1])
-    if not mask_merged:
+    if mask_merged.size == 0:
         return None, None
     background = Image.fromarray(mask_merged)
     return background, mask_merged
